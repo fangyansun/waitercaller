@@ -49,10 +49,10 @@ def account_createtable():
 	return redirect(url_for("account"))
 
 
-@app.route("/account/deletetable", methods=["POST"])
+@app.route("/account/deletetable")
 @login_required
 def account_deletetable():
-	tableid 	= request.form.get("tableid")
+	tableid 	= request.args.get("tableid")
 	DB.delete_table(tableid)
 	return redirect(url_for("account"))
 
