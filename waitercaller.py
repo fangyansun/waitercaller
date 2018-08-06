@@ -11,6 +11,7 @@ from flask import url_for
 from flask import request
 from forms import RegistrationForm
 from forms import LoginForm
+from forms import CreateTableForm
 from user import User
 from passwordhelper import PasswordHelper
 from bitlyhelper import BitlyHelper
@@ -43,16 +44,18 @@ def home():
 @login_required
 def account():
 	tables 		= DB.get_tables(current_user.get_id())
-	return render_template("account.html", tables = tables)
+	return render_template("account.html", createtableform = CreateTableForm(), tables = tables)
 
 @app.route("/account/createtable", methods=["POST"])
 @login_required
 def account_createtable():
-	tablename 	= request.form.get("tablenumber")
-	tableid 	= DB.add_table(tablename, current_user.get_id())
-	new_url		= BH.shorten_url(config.base_url + "newrequest/" + tableid)
-	DB.update_table(tableid, new_url)
-	return redirect(url_for("account"))
+	form 		= CreateTableForm(request.form)
+	if form.validate():
+		tableid = DB.add_table(form.tablenumber.data, current_user.get_id())
+		new_url		= BH.shorten_url(config.base_url + "newrequest/" + tableid)
+		DB.update_table(tableid, new_url)
+		return redirect(url_for("account"))
+	return render_template("account.html", createtableform = form, tables=DB.get_tables(current_user.get_id()))	
 
 
 @app.route("/account/deletetable", methods=["POST"])
