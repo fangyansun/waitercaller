@@ -58,7 +58,7 @@ class MockDBHelper:
 
 
 	def add_request(self, table_id, time):
-		MOCK_REQUESTS.append({"_id": str(table_id), "time":time})
+		MOCK_REQUESTS.append({"_id": table_id, "time":time})
 		return table_id
 
 

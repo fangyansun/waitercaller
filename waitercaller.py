@@ -9,6 +9,8 @@ from flask import render_template
 from flask import redirect
 from flask import url_for
 from flask import request
+from forms import RegistrationForm
+from forms import LoginForm
 from user import User
 from passwordhelper import PasswordHelper
 from bitlyhelper import BitlyHelper
@@ -33,7 +35,8 @@ BH = BitlyHelper()
 
 @app.route("/")
 def home():
-	return render_template("home.html")
+	registrationform = RegistrationForm()
+	return render_template("home.html", loginform=LoginForm(), registrationform = registrationform)
 
 
 @app.route("/account")
@@ -87,14 +90,15 @@ def new_request(tid):
 
 @app.route("/login", methods=["POST"])
 def login():
-	email 		= request.form.get("email")
-	password 	= request.form.get("password")
-	stored_user = DB.get_user(email)
-	if stored_user and PH.validate_password(password, stored_user['salt'], stored_user['hashed']):
-		user 	= User(email)
-		login_user(user, remember = True)
-		return redirect(url_for('account'))
-	return home
+	form = LoginForm(request.form)
+	if form.validate():
+		stored_user = DB.get_user(form.loginemail.data)
+		if stored_user and PH.validate_password(form.loginpassword.data, stored_user['salt'], stored_user['hashed']):
+			user 	= User(form.loginemail.data)
+			login_user(user, remember = True)
+			return redirect(url_for("account"))
+		form.loginemail.errors.append("Email or password invalid")	
+	return render_template("home.html", loginform=form, registrationform=RegistrationForm())
 
 
 @app.route("/logout")
@@ -112,17 +116,16 @@ def load_user(user_id):
 
 @app.route("/register", methods=["POST"])
 def register():
-	email 		= request.form.get("email")
-	pw1			= request.form.get("password")
-	pw2 		= request.form.get("password2")
-	if not pw1 	== pw2:
-		return redirect(url_for("home"))
-	if DB.get_user(email):
-		return redirect(url_for("home"))
-	salt 		= PH.get_salt()
-	hashed 		= PH.get_hash(pw1 + salt)
-	DB.add_user(email, salt, hashed)
-	return redirect(url_for("home"))
+	form = RegistrationForm(request.form)
+	if form.validate():
+		if DB.get_user(form.email.data):
+			form.email.errors.append("Email address already registered")
+			return render_template("home.html", loginform=LoginForm(), registrationform = form)
+		salt 		= PH.get_salt()
+		hashed 		= PH.get_hash(form.password2.data + salt)
+		DB.add_user(form.email.data, salt, hashed)
+		return render_template("home.html", loginform=LoginForm(), registrationform = form, onloadmessage="RegistrationForm successful. Please log in.")
+	return render_template("home.html", loginform=LoginForm(), registrationform = form)
 
 
 if __name__ == '__main__':
