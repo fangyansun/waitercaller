@@ -37,14 +37,14 @@ BH = BitlyHelper()
 @app.route("/")
 def home():
 	registrationform = RegistrationForm()
-	return render_template("home.html", loginform=LoginForm(), registrationform = registrationform)
+	return render_template("home.html", loginform=LoginForm(), registrationform = registrationform, route_prefix = route_prefix)
 
 
 @app.route("/account")
 @login_required
 def account():
 	tables 		= DB.get_tables(current_user.get_id())
-	return render_template("account.html", createtableform = CreateTableForm(), tables = tables)
+	return render_template("account.html", createtableform = CreateTableForm(), tables = tables, route_prefix = route_prefix)
 
 @app.route("/account/createtable", methods=["POST"])
 @login_required
@@ -55,7 +55,7 @@ def account_createtable():
 		new_url		= BH.shorten_url(config.base_url + "newrequest/" + str(tableid))
 		DB.update_table(tableid, new_url)
 		return redirect(url_for("account"))
-	return render_template("account.html", createtableform = form, tables=DB.get_tables(current_user.get_id()))	
+	return render_template("account.html", createtableform = form, tables=DB.get_tables(current_user.get_id()), route_prefix = route_prefix)	
 
 
 @app.route("/account/deletetable", methods=["POST"])
@@ -74,7 +74,7 @@ def dashboard():
 	for req in requests:
 		deltaseconds = (now - req["time"]).seconds
 		req["wait_minutes"] ="{}.{}".format((deltaseconds/60), str(deltaseconds%60).zfill(2))
-	return render_template("dashboard.html", requests=requests)
+	return render_template("dashboard.html", requests=requests, route_prefix = route_prefix)
 
 
 @app.route("/dashboard/resolve", methods=["POST"])
@@ -101,7 +101,7 @@ def login():
 			login_user(user, remember = True)
 			return redirect(url_for("account"))
 		form.loginemail.errors.append("Email or password invalid")	
-	return render_template("home.html", loginform=form, registrationform=RegistrationForm())
+	return render_template("home.html", loginform=form, registrationform=RegistrationForm(), route_prefix = route_prefix)
 
 
 @app.route("/logout")
@@ -123,12 +123,12 @@ def register():
 	if form.validate():
 		if DB.get_user(form.email.data):
 			form.email.errors.append("Email address already registered")
-			return render_template("home.html", loginform=LoginForm(), registrationform = form)
+			return render_template("home.html", loginform=LoginForm(), registrationform = form, route_prefix = route_prefix)
 		salt 		= PH.get_salt()
 		hashed 		= PH.get_hash(form.password2.data + salt)
 		DB.add_user(form.email.data, salt, hashed)
-		return render_template("home.html", loginform=LoginForm(), registrationform = form, onloadmessage="RegistrationForm successful. Please log in.")
-	return render_template("home.html", loginform=LoginForm(), registrationform = form)
+		return render_template("home.html", loginform=LoginForm(), registrationform = form, onloadmessage="RegistrationForm successful. Please log in.", route_prefix = route_prefix)
+	return render_template("home.html", loginform=LoginForm(), registrationform = form, route_prefix = route_prefix)
 
 
 if __name__ == '__main__':
