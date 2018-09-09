@@ -16,12 +16,9 @@ from user import User
 from passwordhelper import PasswordHelper
 from bitlyhelper import BitlyHelper
 import config
-if config.test:
-	from mockdbhelper import MockDBHelper as DBHelper
-	route_prefix = ""
-else:
-	from dbhelper import DBHelper
-	route_prefix = "/waitercaller1"
+
+from dbhelper import DBHelper
+route_prefix = "/waitercaller1"
 
 
 
