@@ -2,7 +2,7 @@ import pymongo
 from bson.objectid import ObjectId
 
 
-DATEBASE = "waitercaller"
+DATABASE = "waitercaller"
 
 class DBHelper:
 	def __init__(self):
